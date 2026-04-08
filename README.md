@@ -55,3 +55,12 @@ The project uses route middleware:
 - `delete product`
 
 Assign permissions to roles in `rbac_seeder.ts`.
+
+## Learning and source code guide
+
+Read `docs/DOCS_SOURCE_CODE_GUIDE.md` for a step-by-step explanation of this codebase from basic to production-level understanding.
+
+For portfolio and CV usage:
+
+- `docs/PROJECT_HIGHLIGHTS.md`
+- `docs/CV_SECTION.md`
