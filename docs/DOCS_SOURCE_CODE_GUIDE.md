@@ -35,7 +35,62 @@ Project flow:
 
 ---
 
-## 3) Auth module বুঝার shortcut
+## 3) Request lifecycle (How AdonisJS works)
+
+এই project-এ একটি request সাধারণত এই path follow করে:
+
+1. **HTTP request আসে**
+   - Example: `GET /api/v1/account/products`
+
+2. **Route match হয়** (`start/routes.ts`)
+   - Route group, prefix, middleware এবং controller method decide হয়
+
+3. **Server middleware run হয়** (`start/kernel.ts` -> `server.use`)
+   - JSON response shaping, container bindings, CORS ইত্যাদি
+
+4. **Router middleware run হয়** (`start/kernel.ts` -> `router.use`)
+   - body parser, session, shield, auth initialization, silent auth
+
+5. **Named middleware run হয়** (route-level)
+   - `middleware.auth()` -> logged-in user required
+   - `middleware.permission({ permission: '...' })` -> RBAC check
+
+6. **Controller execute হয়** (`app/controllers/*`)
+   - Request input নেওয়া, validator call, service/model interaction
+
+7. **Validation হয়** (`app/validators/*`)
+   - `request.validateUsing(...)`
+   - Fail করলে `E_VALIDATION_ERROR` throw
+
+8. **Business logic + DB query হয়**
+   - Models (`app/models/*`) via Lucid ORM
+   - External integration হলে services (`app/services/*`)
+
+9. **Response serialize হয়ে client-এ যায়**
+   - Success হলে controller return value
+   - Error হলে global exception handler format করে দেয়
+
+10. **Exception handling** (`app/exceptions/handler.ts`)
+    - Validation -> 422
+    - Unauthorized -> 401
+    - Forbidden -> 403
+    - Not found -> 404
+    - Unexpected -> 500
+
+### Request lifecycle trace example
+
+`GET /api/v1/account/users?page=1&limit=10`
+
+1. route match -> `UsersController.index`
+2. `middleware.auth()` user verify
+3. `middleware.permission(manage users)` role/permission verify
+4. controller `page`, `limit`, `search` parse করে
+5. `User.query().preload('roles').paginate(...)`
+6. paginated response return
+
+---
+
+## 4) Auth module বুঝার shortcut
 
 Auth routes:
 
@@ -52,7 +107,7 @@ Key concepts:
 
 ---
 
-## 4) RBAC (Role + Permission) flow
+## 5) RBAC (Role + Permission) flow
 
 Relevant files:
 
@@ -78,7 +133,7 @@ Example permissions:
 
 ---
 
-## 5) Validation pattern
+## 6) Validation pattern
 
 Files:
 
@@ -93,7 +148,7 @@ Pattern:
 
 ---
 
-## 6) Error handling pattern (production style)
+## 7) Error handling pattern (production style)
 
 Core file: `app/exceptions/handler.ts`
 
@@ -112,7 +167,7 @@ Note:
 
 ---
 
-## 7) Product module deep dive
+## 8) Product module deep dive
 
 Files:
 
@@ -131,7 +186,7 @@ Features:
 
 ---
 
-## 8) AI feature বুঝার জন্য
+## 9) AI feature বুঝার জন্য
 
 Files:
 
@@ -148,7 +203,7 @@ Flow:
 
 ---
 
-## 9) Database understanding checklist
+## 10) Database understanding checklist
 
 Read these migrations carefully:
 
@@ -171,7 +226,7 @@ Then draw ERD manually:
 
 ---
 
-## 10) Practice tasks (must do)
+## 11) Practice tasks (must do)
 
 1. নতুন permission add করো: `view reports`
 2. নতুন role add করো: `auditor`
@@ -183,7 +238,7 @@ Then draw ERD manually:
 
 ---
 
-## 11) Debugging approach
+## 12) Debugging approach
 
 যখন issue হবে, এই order follow করো:
 
@@ -196,7 +251,7 @@ Then draw ERD manually:
 
 ---
 
-## 12) Production readiness checklist
+## 13) Production readiness checklist
 
 - [ ] Env variables properly set
 - [ ] Strong app key
@@ -209,7 +264,7 @@ Then draw ERD manually:
 
 ---
 
-## 13) Quick run commands
+## 14) Quick run commands
 
 ```bash
 npm install
