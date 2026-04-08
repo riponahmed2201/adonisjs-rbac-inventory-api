@@ -13,7 +13,57 @@ export default class HttpExceptionHandler extends ExceptionHandler {
    * response to the client
    */
   async handle(error: unknown, ctx: HttpContext) {
-    return super.handle(error, ctx)
+    const maybeError = error as {
+      status?: number
+      code?: string
+      message?: string
+      messages?: unknown
+    }
+
+    if (maybeError?.code === 'E_VALIDATION_ERROR') {
+      return ctx.response.status(422).send({
+        success: false,
+        message: 'Validation failed',
+        errors: maybeError.messages ?? [],
+      })
+    }
+
+    if (maybeError?.status === 401) {
+      return ctx.response.status(401).send({
+        success: false,
+        message: maybeError.message ?? 'Unauthorized',
+      })
+    }
+
+    if (maybeError?.code === 'E_ROW_NOT_FOUND' || maybeError?.status === 404) {
+      return ctx.response.status(404).send({
+        success: false,
+        message: 'Resource not found',
+      })
+    }
+
+    if (maybeError?.status === 403) {
+      return ctx.response.status(403).send({
+        success: false,
+        message: maybeError.message ?? 'Forbidden',
+      })
+    }
+
+    if (maybeError?.status && maybeError.status < 500) {
+      return ctx.response.status(maybeError.status).send({
+        success: false,
+        message: maybeError.message ?? 'Request failed',
+      })
+    }
+
+    if (this.debug) {
+      return super.handle(error, ctx)
+    }
+
+    return ctx.response.status(500).send({
+      success: false,
+      message: 'Internal server error',
+    })
   }
 
   /**

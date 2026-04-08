@@ -4,8 +4,8 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 export default class UsersController {
   async index({ request }: HttpContext) {
-    const page = Number(request.input('page', 1))
-    const limit = Number(request.input('limit', 10))
+    const page = Math.max(Number(request.input('page', 1)) || 1, 1)
+    const limit = Math.min(Math.max(Number(request.input('limit', 10)) || 10, 1), 100)
     const search = request.input('search')
 
     const query = User.query().preload('roles')

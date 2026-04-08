@@ -6,8 +6,8 @@ import AiProductService from '#services/ai_product_service'
 
 export default class ProductsController {
   async index({ request }: HttpContext) {
-    const page = Number(request.input('page', 1))
-    const limit = Number(request.input('limit', 10))
+    const page = Math.max(Number(request.input('page', 1)) || 1, 1)
+    const limit = Math.min(Math.max(Number(request.input('limit', 10)) || 10, 1), 100)
     const search = request.input('search')
     const categoryId = request.input('categoryId')
     const brandId = request.input('brandId')
@@ -40,6 +40,13 @@ export default class ProductsController {
     if (image) {
       const fileName = `${Date.now()}-${image.clientName}`
       await image.move(app.makePath('storage/products'), { name: fileName })
+      if (!image.isValid || !image.filePath) {
+        return response.badRequest({
+          success: false,
+          message: 'Image upload failed',
+          errors: image.errors,
+        })
+      }
       imagePath = `storage/products/${fileName}`
     }
 
