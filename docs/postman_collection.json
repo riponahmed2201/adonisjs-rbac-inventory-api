@@ -1,0 +1,328 @@
+{
+  "info": {
+    "_postman_id": "b7f5c6f0-7d5b-4b8d-a54c-9c3d8f2c8a10",
+    "name": "AdonisJS RBAC Inventory API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for auth, RBAC, users, products, upload, and AI summary."
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3333/api/v1" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/signup", "host": ["{{baseUrl}}"], "path": ["auth", "signup"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Demo User\",\n  \"email\": \"demo@example.com\",\n  \"password\": \"Demo@12345\",\n  \"passwordConfirmation\": \"Demo@12345\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (sets {{token}})",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "if (json && json.token) {",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Admin@12345\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Account (Auth required)",
+      "item": [
+        {
+          "name": "Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/account/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["account", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Roles",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/account/roles", "host": ["{{baseUrl}}"], "path": ["account", "roles"] }
+          }
+        },
+        {
+          "name": "Permissions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/account/permissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["account", "permissions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users (manage users permission)",
+      "item": [
+        {
+          "name": "List users (search + pagination)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/account/users?page=1&limit=10&search=",
+              "host": ["{{baseUrl}}"],
+              "path": ["account", "users"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create user",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/account/users", "host": ["{{baseUrl}}"], "path": ["account", "users"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Staff One\",\n  \"email\": \"staff1@example.com\",\n  \"password\": \"Staff@12345\",\n  \"roleIds\": [3]\n}"
+            }
+          }
+        },
+        {
+          "name": "Update user",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/account/users/1", "host": ["{{baseUrl}}"], "path": ["account", "users", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"System Admin Updated\",\n  \"isActive\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete user",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/account/users/2", "host": ["{{baseUrl}}"], "path": ["account", "users", "2"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catalog",
+      "item": [
+        {
+          "name": "List categories",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/account/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["account", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Create category (edit product permission)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/account/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["account", "categories"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Shoes\",\n  \"slug\": \"shoes\"\n}" }
+          }
+        },
+        {
+          "name": "Create subcategory (edit product permission)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/account/subcategories",
+              "host": ["{{baseUrl}}"],
+              "path": ["account", "subcategories"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Running Shoes\",\n  \"slug\": \"running-shoes\",\n  \"categoryId\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "List brands",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/account/brands", "host": ["{{baseUrl}}"], "path": ["account", "brands"] }
+          }
+        },
+        {
+          "name": "Create brand (edit product permission)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/account/brands", "host": ["{{baseUrl}}"], "path": ["account", "brands"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Nike\",\n  \"slug\": \"nike\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List products (search/filter/pagination)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/account/products?search=&categoryId=&brandId=&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["account", "products"],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "categoryId", "value": "" },
+                { "key": "brandId", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create product (multipart + image) (create product permission)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/account/products", "host": ["{{baseUrl}}"], "path": ["account", "products"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "Air Zoom", "type": "text" },
+                { "key": "sku", "value": "SKU-AIR-001", "type": "text" },
+                { "key": "description", "value": "Comfortable running shoe", "type": "text" },
+                { "key": "price", "value": "120", "type": "text" },
+                { "key": "stock", "value": "50", "type": "text" },
+                { "key": "categoryId", "value": "1", "type": "text" },
+                { "key": "subcategoryId", "value": "1", "type": "text" },
+                { "key": "brandId", "value": "1", "type": "text" },
+                { "key": "image", "type": "file", "src": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update product (edit product permission)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/account/products/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["account", "products", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Air Zoom Updated\",\n  \"sku\": \"SKU-AIR-001\",\n  \"price\": 130,\n  \"stock\": 45,\n  \"categoryId\": 1,\n  \"subcategoryId\": 1,\n  \"brandId\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete product (delete product permission)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/account/products/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["account", "products", "1"]
+            }
+          }
+        },
+        {
+          "name": "AI summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/account/products/1/ai-summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["account", "products", "1", "ai-summary"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+
